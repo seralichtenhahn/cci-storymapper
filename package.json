@@ -3,7 +3,8 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "start": "vercel dev",
+    "dev": "vite",
+    "serve": "vercel dev",
     "deploy": "vercel deploy --prod",
     "build": "vite build",
     "preview": "vite preview"
