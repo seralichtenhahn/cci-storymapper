@@ -1,7 +1,12 @@
-from flask import Flask
+from flask import Flask, request, jsonify
+from ._parser import parse_query
  
 app = Flask(__name__)
  
-@app.route("/")
+@app.route("/parser", methods=["POST"])
 def home_view():
-  return "<h1>Welcome to Geeks for Geeks</h1>"
+  if not "query" in request.json:
+    return jsonify({"error": "No query provided"}), 400
+  query = request.json["query"]
+  results = parse_query(query)
+  return jsonify(results)

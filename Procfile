@@ -1,3 +1,1 @@
-web: yarn preview
-
-api: gunicorn app:app
+web: gunicorn api.app:app
