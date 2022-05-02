@@ -1,8 +1,10 @@
 import csv
-import sys
 import os
-from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.tokenize import sent_tokenize
 import en_core_web_sm
+import requests
+import urllib
+from flask import current_app
 
 nlp = en_core_web_sm.load()
 
@@ -64,8 +66,50 @@ def parse_query(query):
             "name": city[7],
             "country": city[4]
           })
+    
+  if len(results) == 0:
+    return []
 
-  return results
+  geocoded_entities = list(map(_fetch_details, results))
+
+  return geocoded_entities
+
+def _fetch_details(entity):
+  base_url = "https://api.mapbox.com/geocoding/v5/mapbox.places/"
+  query = urllib.parse.quote(entity["name"])
+
+  if entity["type"] == "city":
+    query = urllib.parse.quote(entity["name"] + "," + entity["country"])
+  
+  types_map = {
+    "city": "place",
+    "location": "place",
+    "facility": "poi"
+  }
+
+  options = {
+    "access_token": current_app.config["MAPBOX_ACCESS_TOKEN"],
+    "types": types_map[entity["type"]],
+    "language": "en",
+    "limit": 1
+  }
+
+  res = requests.get(base_url + query + ".json", params=options)
+  data = res.json()
+  if res.status_code != 200 or len(data['features']) == 0:
+    print("Error: " + str(data))
+    return entity
+  
+  feature = data['features'][0]
+
+  return {
+    "type": entity['type'],
+    "name": entity['name'],
+    "lat": feature['center'][1],
+    "lng": feature['center'][0],
+    "country": feature['context'][len(feature['context']) - 1]['text'],
+    "properties": feature['properties']
+  }
 
 def _find_city(query):
   for city in cities:
