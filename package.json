@@ -3,20 +3,33 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "dev": "vite",
-    "deploy": "vercel deploy --prod",
+    "dev": "concurrently \"yarn run dev:frontend\" \"yarn run dev:api\"",
+    "dev:frontend": "vite",
+    "dev:api": "FLASK_ENV=development flask run --port=4000",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@math.gl/web-mercator": "^3.5.7",
+    "lodash": "^4.17.21",
+    "mapbox-gl": "^2.8.2",
+    "mapbox.js": "^3.3.1",
     "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react-dom": "^18.0.0",
+    "react-map-gl": "^7.0.11",
+    "slate": "^0.78.0",
+    "slate-react": "^0.78.1",
+    "swr": "^1.3.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@vitejs/plugin-react": "^1.3.0",
-    "vercel": "^24.1.0",
+    "autoprefixer": "^10.4.5",
+    "concurrently": "^7.1.0",
+    "postcss": "^8.4.13",
+    "prettier": "2.6.2",
+    "tailwindcss": "^3.0.24",
     "vite": "^2.9.5"
   },
   "engines": {
