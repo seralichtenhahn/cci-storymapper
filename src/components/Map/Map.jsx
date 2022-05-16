@@ -22,7 +22,9 @@ export default function Map() {
     }
 
     const bounds = new mapboxgl.LngLatBounds()
-    data.forEach((marker) => bounds.extend([marker.lng, marker.lat]))
+    data
+      .filter((marker) => marker.lat && marker.lng)
+      .forEach((marker) => bounds.extend([marker.lng, marker.lat]))
 
     const { latitude, longitude, zoom } = new WebMercatorViewport({
       width: container.current.clientWidth,
@@ -52,58 +54,65 @@ export default function Map() {
         attributionControl={false}
         mapStyle="mapbox://styles/seralichtenhahn/cl2n8c5lx005714l40jxdibql"
       >
-        {data.map((marker) => {
-          const { lat, lng, name } = marker
+        {data
+          .filter((marker) => marker.lat && marker.lng)
+          .map((marker) => {
+            const { lat, lng, name } = marker
 
-          return (
-            <Marker key={name} longitude={lng} latitude={lat} anchor="bottom">
-              <Tippy
-                content={
-                  <p className="flex items-center gap-2 w-max">
-                    <span>{name}</span>
-                    {marker.properties?.wikidata && (
-                      <a
-                        href={`https://www.wikidata.org/wiki/${marker.properties.wikidata}`}
-                        title="Wikidata"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <IconExternal className="w-3 h-3" />
-                      </a>
-                    )}
-                  </p>
-                }
-                placement="right"
-                interactive={true}
-                visible={true}
-                moveTransition="transform 100ms ease-out"
-                maxWidth="none"
-                popperOptions={{
-                  strategy: "fixed",
-                  modifiers: [
-                    {
-                      name: "flip",
-                      options: {
-                        fallbackPlacements: ["bottom", "right", "top", "left"],
+            return (
+              <Marker key={name} longitude={lng} latitude={lat} anchor="bottom">
+                <Tippy
+                  content={
+                    <p className="flex items-center gap-2 w-max">
+                      <span>{name}</span>
+                      {marker.properties?.wikidata && (
+                        <a
+                          href={`https://www.wikidata.org/wiki/${marker.properties.wikidata}`}
+                          title="Wikidata"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <IconExternal className="w-3 h-3" />
+                        </a>
+                      )}
+                    </p>
+                  }
+                  placement="right"
+                  interactive={true}
+                  visible={true}
+                  moveTransition="transform 100ms ease-out"
+                  maxWidth="none"
+                  popperOptions={{
+                    strategy: "fixed",
+                    modifiers: [
+                      {
+                        name: "flip",
+                        options: {
+                          fallbackPlacements: [
+                            "bottom",
+                            "right",
+                            "top",
+                            "left",
+                          ],
+                        },
                       },
-                    },
-                    {
-                      name: "preventOverflow",
-                      options: {
-                        altAxis: true,
-                        tether: false,
+                      {
+                        name: "preventOverflow",
+                        options: {
+                          altAxis: true,
+                          tether: false,
+                        },
                       },
-                    },
-                  ],
-                }}
-              >
-                <button>
-                  <IconMarker className="w-6 h-6" />
-                </button>
-              </Tippy>
-            </Marker>
-          )
-        })}
+                    ],
+                  }}
+                >
+                  <button>
+                    <IconMarker className="w-6 h-6" />
+                  </button>
+                </Tippy>
+              </Marker>
+            )
+          })}
         <NavigationControl showCompass={false} className="bottom-8 right-8" />
       </ReactMapGL>
     </div>
