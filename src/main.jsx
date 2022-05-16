@@ -1,4 +1,4 @@
-import "@/assets/index.css"
+import "@/assets/main.css"
 import "mapbox-gl/dist/mapbox-gl.css"
 import "tippy.js/dist/tippy.css"
 

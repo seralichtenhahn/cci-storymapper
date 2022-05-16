@@ -29,3 +29,6 @@ __pycache__
 
 # env
 .env
+
+# tailwind output
+src/assets/main.css

@@ -3,10 +3,12 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "dev": "concurrently \"yarn run dev:frontend\" \"yarn run dev:api\"",
+    "dev": "concurrently \"yarn run dev:css\" \"yarn run dev:frontend\" \"yarn run dev:api\"",
     "dev:frontend": "vite",
+    "dev:css": "tailwindcss -i ./src/assets/tailwind.css -o ./src/assets/main.css --watch",
     "dev:api": "FLASK_ENV=development flask run --port=4000",
-    "build": "vite build",
+    "build": "yarn run build:css && vite build",
+    "build:css": "NODE_ENV=production tailwindcss -i ./src/assets/tailwind.css -o ./src/assets/main.css -m",
     "preview": "vite preview"
   },
   "dependencies": {
