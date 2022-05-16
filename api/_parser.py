@@ -1,12 +1,12 @@
 import csv
 import os
 from nltk.tokenize import sent_tokenize
-import en_core_web_sm
+import en_core_web_lg
 import requests
 import urllib
 from flask import current_app
 
-nlp = en_core_web_sm.load()
+nlp = en_core_web_lg.load()
 
 csv_path = os.getcwd() + "/api/data/cities.csv"
 cities = []
@@ -18,7 +18,7 @@ with open(csv_path, 'r') as csv_file:
   # sort list by length of city name
   cities.sort(key=lambda x: len(x[7]), reverse=True)
 
-def parse_query(query):
+def parse_query(query, excluded=[]):
   results = []
   sentences = sent_tokenize(query)
   for sentence in sentences:
@@ -70,7 +70,10 @@ def parse_query(query):
   if len(results) == 0:
     return []
 
-  geocoded_entities = list(map(_fetch_details, results))
+  # filter excluded entities
+  filtered_results = filter(lambda entity: entity["name"] not in excluded, results)
+
+  geocoded_entities = list(map(_fetch_details, filtered_results))
 
   return geocoded_entities
 

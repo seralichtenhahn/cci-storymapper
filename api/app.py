@@ -14,6 +14,10 @@ app.config.from_pyfile('settings.py')
 def home_view():
   if not "query" in request.json:
     return jsonify({"error": "No query provided"}), 400
+
   query = request.json["query"]
-  results = parse_query(query)
+  excluded = request.json["excluded"]
+
+  results = parse_query(query, excluded=excluded)
+
   return jsonify(results)
