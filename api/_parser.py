@@ -1,12 +1,12 @@
 import csv
 import os
 from nltk.tokenize import sent_tokenize
-import en_core_web_lg
+import en_core_web_md
 import requests
 import urllib
 from flask import current_app
 
-nlp = en_core_web_lg.load()
+nlp = en_core_web_md.load()
 
 csv_path = os.getcwd() + "/api/data/cities.csv"
 cities = []
