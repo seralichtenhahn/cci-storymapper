@@ -1,18 +1,22 @@
+import useDebounce from "@/hooks/useDebounce"
 import useSWR from "swr"
 
-const useApi = ({ query }) => {
+const useApi = ({ query, excluded }) => {
+  const debouncedQuery = useDebounce(query, 1000)
+  const body = JSON.stringify({
+    query: debouncedQuery,
+    excluded,
+  })
   const { data, error, isValidating } = useSWR(
-    query || null,
-    (query) =>
+    debouncedQuery ? body : null,
+    (body) =>
       fetch(`${import.meta.env.VITE_API_URL}/parser`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
         },
-        body: JSON.stringify({
-          query,
-        }),
+        body,
       }).then((res) => res.json()),
     {
       errorRetryInterval: 100,

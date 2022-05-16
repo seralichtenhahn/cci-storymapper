@@ -1,36 +1,128 @@
 import { Editable, Slate, withReact } from "slate-react"
-import { Node, createEditor } from "slate"
-import React, { useCallback, useMemo } from "react"
+import { Node, Text, createEditor } from "slate"
+import React, { useCallback, useMemo, useState } from "react"
 
-import { debounce } from "lodash"
+import IconDelete from "@/components/Icons/IconDelete"
+import Tippy from "@tippyjs/react"
+import clsx from "clsx"
+import useAppState from "@/hooks/useAppState"
 
 const serialize = (nodes) => {
   return nodes.map((n) => Node.string(n)).join("\n")
 }
 
-export default function Editor({ onChange }) {
+export default function Editor() {
   const editor = useMemo(() => withReact(createEditor()), [])
+  const initialValue = useMemo(
+    () => [
+      {
+        type: "paragraph",
+        children: [{ type: "text", text: "This is London and Basel" }],
+      },
+    ],
+    [],
+  )
+  const renderLeaf = useCallback((props) => <Leaf {...props} />, [])
 
-  const initialValue = [
-    {
-      type: "paragraph",
-      children: [{ type: "text", text: "" }],
+  const { setQuery, isLoading, data, query } = useAppState()
+
+  const decorate = useCallback(
+    ([node, path]) => {
+      const ranges = []
+
+      if (!data || data.length === 0) {
+        return ranges
+      }
+
+      if (Text.isText(node)) {
+        const { text } = node
+
+        data.forEach((result) => {
+          const { name, type } = result
+
+          const index = text.toLowerCase().indexOf(name.toLowerCase())
+          if (index !== -1) {
+            ranges.push({
+              anchor: { path, offset: index },
+              focus: { path, offset: index + name.length },
+              highlight: type,
+              name,
+            })
+          }
+        })
+      }
+
+      return ranges
     },
-  ]
-
-  const debouncedOnChange = useCallback(
-    debounce((value) => {
-      onChange(serialize(value))
-    }, 1000), // wait 1s before invoking onChange
-    [onChange],
+    [data],
   )
 
   return (
-    <Slate editor={editor} value={initialValue} onChange={debouncedOnChange}>
-      <Editable
-        placeholder="Once upon a time in Hollywood..."
-        className="border-2 border-slate-700 rounded-lg flex-1 p-2"
-      />
-    </Slate>
+    <div className="flex flex-col h-full p-4 space-y-4 bg-white shadow-lg">
+      <h2 className="font-bold text-gray-900">Your Story:</h2>
+      <Slate
+        editor={editor}
+        value={initialValue}
+        onChange={(v) => setQuery(serialize(v))}
+      >
+        <Editable
+          decorate={decorate}
+          renderLeaf={renderLeaf}
+          spellCheck
+          autoFocus
+          placeholder="Once upon a time in Hollywood..."
+          className="flex-1"
+        />
+      </Slate>
+      <div className="flex justify-between px-4 py-1 text-sm font-bold tracking-wider text-blue-500 uppercase bg-blue-100 rounded-full justify-self-end">
+        <span>{query.length}/2000</span>
+        <span>{isLoading ? "Loading..." : "Saved"}</span>
+      </div>
+    </div>
+  )
+}
+
+const Leaf = ({ attributes, children, leaf }) => {
+  const { excludePlace } = useAppState()
+  const classes = "transition-colors duration-200"
+
+  if (!leaf.highlight) {
+    return (
+      <span {...attributes} className={classes}>
+        {children}
+      </span>
+    )
+  }
+
+  return (
+    <Tippy
+      interactive
+      placement="bottom"
+      content={
+        <div className="text-sm" contentEditable={false}>
+          <button
+            onClick={() => excludePlace(leaf.name)}
+            className="flex items-center"
+          >
+            <IconDelete className="w-3 h-3 mr-2" />
+            <span>Remove from map</span>
+          </button>
+        </div>
+      }
+    >
+      <button
+        type="button"
+        {...attributes}
+        className={clsx(
+          "focus:outline-none rounded -mx-0.5 px-0.5",
+          classes,
+          leaf.highlight === "city" && "bg-blue-300",
+          leaf.highlight === "location" && "bg-blue-100",
+          leaf.highlight === "facility" && "bg-blue-100",
+        )}
+      >
+        {children}
+      </button>
+    </Tippy>
   )
 }

@@ -3,40 +3,29 @@ import ReactMapGL, { Marker, NavigationControl } from "react-map-gl"
 
 import WebMercatorViewport from "@math.gl/web-mercator"
 import mapboxgl from "mapbox-gl"
+import useAppState from "@/hooks/useAppState"
 
-export default function Map({ data }) {
-  const ref = useRef()
-  const isSizeSet = useRef(false)
+export default function Map() {
+  const container = useRef()
+  const { data } = useAppState()
 
   const [viewport, setViewport] = useState({
-    width: ref.current?.offsetWidth ?? 0,
-    height: ref.current?.offsetHeight ?? 0,
     position: [0, 0, 0],
   })
 
-  // set size of map
   useEffect(() => {
-    setViewport((v) => ({
-      ...v,
-      width: ref.current?.offsetWidth ?? 0,
-      height: ref.current?.offsetHeight ?? 0,
-    }))
-
-    isSizeSet.current = true
-  }, [ref])
-
-  useEffect(() => {
-    console.log({ viewport })
-    if (data.length === 0 || !isSizeSet.current) {
+    if (data.length === 0) {
       return
     }
 
     const bounds = new mapboxgl.LngLatBounds()
     data.forEach((marker) => bounds.extend([marker.lng, marker.lat]))
 
-    const { latitude, longitude, zoom } = new WebMercatorViewport(
-      viewport,
-    ).fitBounds(bounds.toArray(), {
+    const { latitude, longitude, zoom } = new WebMercatorViewport({
+      width: container.current.clientWidth,
+      height: container.current.clientHeight,
+      ...viewport,
+    }).fitBounds(bounds.toArray(), {
       padding: 100,
       maxZoom: 10,
     })
@@ -47,17 +36,15 @@ export default function Map({ data }) {
       longitude,
       zoom,
     })
-  }, [data, isSizeSet])
+  }, [data])
 
   return (
-    <div
-      ref={ref}
-      className="aspect-video lg:aspect-[4/5] overflow-hidden rounded-lg"
-    >
+    <div ref={container} className="w-full h-full overflow-hidden">
       <ReactMapGL
         {...viewport}
+        style={{ width: "100%", height: "100%" }}
+        onMove={(evt) => setViewport(evt.viewState)}
         mapboxAccessToken={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}
-        onViewportChange={setViewport}
         scrollZoom={false}
         attributionControl={false}
         mapStyle="mapbox://styles/seralichtenhahn/cl2n8c5lx005714l40jxdibql"
