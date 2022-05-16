@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import ReactMapGL, { Marker, NavigationControl } from "react-map-gl"
 
+import IconExternal from "@/components/Icons/IconExternal"
+import IconMarker from "@/components/Icons/IconMarker"
+import Tippy from "@tippyjs/react"
 import WebMercatorViewport from "@math.gl/web-mercator"
 import mapboxgl from "mapbox-gl"
 import useAppState from "@/hooks/useAppState"
@@ -51,9 +54,53 @@ export default function Map() {
       >
         {data.map((marker) => {
           const { lat, lng, name } = marker
+
           return (
             <Marker key={name} longitude={lng} latitude={lat} anchor="bottom">
-              <div className="w-6 h-6 rounded-full bg-sky-800"></div>
+              <Tippy
+                content={
+                  <p className="flex items-center gap-2 w-max">
+                    <span>{name}</span>
+                    {marker.properties?.wikidata && (
+                      <a
+                        href={`https://www.wikidata.org/wiki/${marker.properties.wikidata}`}
+                        title="Wikidata"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <IconExternal className="w-3 h-3" />
+                      </a>
+                    )}
+                  </p>
+                }
+                placement="right"
+                interactive={true}
+                visible={true}
+                moveTransition="transform 100ms ease-out"
+                maxWidth="none"
+                popperOptions={{
+                  strategy: "fixed",
+                  modifiers: [
+                    {
+                      name: "flip",
+                      options: {
+                        fallbackPlacements: ["bottom", "right", "top", "left"],
+                      },
+                    },
+                    {
+                      name: "preventOverflow",
+                      options: {
+                        altAxis: true,
+                        tether: false,
+                      },
+                    },
+                  ],
+                }}
+              >
+                <button>
+                  <IconMarker className="w-6 h-6" />
+                </button>
+              </Tippy>
             </Marker>
           )
         })}
