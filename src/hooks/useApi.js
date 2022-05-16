@@ -1,13 +1,17 @@
 import useDebounce from "@/hooks/useDebounce"
-import useSWR from "swr"
+import { useRef } from "react"
+import useSWRImmutable from "swr/immutable"
 
 const useApi = ({ query, excluded }) => {
   const debouncedQuery = useDebounce(query, 1000)
+  const lastResponse = useRef([])
+
   const body = JSON.stringify({
     query: debouncedQuery,
     excluded,
   })
-  const { data, error, isValidating } = useSWR(
+
+  const { data, error, isValidating } = useSWRImmutable(
     debouncedQuery ? body : null,
     (body) =>
       fetch(`${import.meta.env.VITE_API_URL}/parser`, {
@@ -22,12 +26,15 @@ const useApi = ({ query, excluded }) => {
       errorRetryInterval: 100,
       errorRetryCount: 2,
       loadingTimeout: 1000 * 30,
-      revalidateIfStale: false,
     },
   )
 
+  if (data?.length > 0) {
+    lastResponse.current = data
+  }
+
   return {
-    data: data ?? [],
+    data: data ?? lastResponse.current,
     error,
     isLoading: isValidating,
   }

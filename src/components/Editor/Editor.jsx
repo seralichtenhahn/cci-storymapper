@@ -114,7 +114,7 @@ const Leaf = ({ attributes, children, leaf }) => {
         type="button"
         {...attributes}
         className={clsx(
-          "focus:outline-none rounded -mx-0.5 px-0.5",
+          "focus:outline-none rounded relative -mx-0.5 px-0.5 after:absolute after:rounded-full after:w-2 after:h-2 after:bg-blue-600 after:top-[-3px] after:right-[-3px]",
           classes,
           leaf.highlight === "city" && "bg-blue-300",
           leaf.highlight === "location" && "bg-blue-100",
