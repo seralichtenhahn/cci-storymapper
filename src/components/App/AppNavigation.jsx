@@ -1,12 +1,14 @@
+import IconMarker from "@/components/Icons/IconMarker"
 import React from "react"
 
 export default function AppNavigation() {
   return (
     <nav className="flex items-center justify-between w-full p-4 mx-auto text-white bg-blue-700">
       <a
-        className="inline-flex items-center justify-center px-4 py-2 font-bold rounded-lg"
+        className="inline-flex items-center justify-center py-2 font-bold rounded-lg"
         href="/"
       >
+        <IconMarker className="w-5 h-5 mr-1" />
         StoryMapper
       </a>
 
@@ -18,7 +20,7 @@ export default function AppNavigation() {
         </li>
         <li>
           <a
-            className="inline-flex items-center px-3 py-2 rounded-lg"
+            className="inline-flex items-center py-2 rounded-lg"
             href="https://github.com/seralichtenhahn/cci-storymapper"
             target="_blank"
           >
