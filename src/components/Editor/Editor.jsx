@@ -17,7 +17,7 @@ export default function Editor() {
     () => [
       {
         type: "paragraph",
-        children: [{ type: "text", text: "This is London and Basel" }],
+        children: [{ type: "text", text: "" }],
       },
     ],
     [],
