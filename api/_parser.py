@@ -12,11 +12,11 @@ csv_path = os.getcwd() + "/api/data/cities.csv"
 cities = []
 
 with open(csv_path, 'r') as csv_file:
-  csv_reader = csv.reader(csv_file)
+  csv_reader = csv.DictReader(csv_file)
   cities = list(csv_reader)
 
   # sort list by length of city name
-  cities.sort(key=lambda x: len(x[7]), reverse=True)
+  cities.sort(key=lambda city: len(city["city_name"]), reverse=True)
 
 def parse_query(query, excluded=[]):
   results = []
@@ -31,11 +31,11 @@ def parse_query(query, excluded=[]):
       if entity.label_ == 'GPE':
         city = _find_city(entity.text)
         if city is not None:
-          parsed_entities.add(city[7])
+          parsed_entities.add(city["city_name"])
           results.append({
             "type": "city",
-            "name": city[7],
-            "country": city[4]
+            "name": city["city_name"],
+            "country_code": city["country_iso_code"]
           })
       # if entity is a location
       elif entity.label_ == 'LOC':
@@ -63,8 +63,8 @@ def parse_query(query, excluded=[]):
         if city is not None:
           results.append({
             "type": "city",
-            "name": city[7],
-            "country": city[4]
+            "name": city["city_name"],
+            "country_code": city["country_iso_code"]
           })
     
   if len(results) == 0:
@@ -81,11 +81,8 @@ def _fetch_details(entity):
   base_url = "https://api.mapbox.com/geocoding/v5/mapbox.places/"
   query = urllib.parse.quote(entity["name"])
 
-  if entity["type"] == "city":
-    query = urllib.parse.quote(entity["name"] + "," + entity["country"])
-  
   types_map = {
-    "city": "place",
+    "city": "place,locality",
     "location": "place",
     "facility": "poi"
   }
@@ -96,6 +93,9 @@ def _fetch_details(entity):
     "language": "en",
     "limit": 1
   }
+
+  if entity["type"] == "city":
+    options["country"] = entity["country_code"]
 
   res = requests.get(base_url + query + ".json", params=options)
   data = res.json()
@@ -116,7 +116,7 @@ def _fetch_details(entity):
 
 def _find_city(query):
   for city in cities:
-    if city[7].lower() == query.lower():
+    if city["city_name"].lower() == query.lower():
       return city
   return None
 
