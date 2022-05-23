@@ -56,11 +56,11 @@ export default function Map() {
       >
         {data
           .filter((marker) => marker.lat && marker.lng)
-          .map((marker) => {
+          .map((marker, i) => {
             const { lat, lng, name } = marker
 
             return (
-              <Marker key={name} longitude={lng} latitude={lat} anchor="bottom">
+              <Marker key={i} longitude={lng} latitude={lat} anchor="bottom">
                 <Tippy
                   content={
                     <p className="flex items-center gap-2 w-max">

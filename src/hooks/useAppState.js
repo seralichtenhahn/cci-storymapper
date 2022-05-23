@@ -6,7 +6,6 @@ const useAppState = () => {
   const appState = useContext(AppStateContext)
 
   const excludePlace = useCallback((place) => {
-    console.log(place)
     appState.setExcluded((excluded) => [...excluded, place])
   }, [])
 

@@ -38,15 +38,15 @@ export default function Editor() {
         const { text } = node
 
         data.forEach((result) => {
-          const { name, type } = result
+          const { query, type } = result
 
-          const index = text.toLowerCase().indexOf(name.toLowerCase())
+          const index = text.toLowerCase().indexOf(query.toLowerCase())
           if (index !== -1) {
             ranges.push({
               anchor: { path, offset: index },
-              focus: { path, offset: index + name.length },
+              focus: { path, offset: index + query.length },
               highlight: type,
-              name,
+              query,
             })
           }
         })
@@ -101,7 +101,7 @@ const Leaf = ({ attributes, children, leaf }) => {
       content={
         <div className="text-sm" contentEditable={false}>
           <button
-            onClick={() => excludePlace(leaf.name)}
+            onClick={() => excludePlace(leaf.query)}
             className="flex items-center"
           >
             <IconDelete className="w-3 h-3 mr-2" />
@@ -117,6 +117,7 @@ const Leaf = ({ attributes, children, leaf }) => {
           "focus:outline-none rounded relative -mx-0.5 px-0.5 after:absolute after:rounded-full after:w-2 after:h-2 after:bg-blue-600 after:top-[-3px] after:right-[-3px]",
           classes,
           leaf.highlight === "city" && "bg-blue-300",
+          leaf.highlight === "country" && "bg-blue-300",
           leaf.highlight === "location" && "bg-blue-100",
           leaf.highlight === "facility" && "bg-blue-100",
         )}
