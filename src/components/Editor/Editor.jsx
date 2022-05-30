@@ -118,6 +118,7 @@ const Leaf = ({ attributes, children, leaf }) => {
           classes,
           leaf.highlight === "city" && "bg-blue-300",
           leaf.highlight === "country" && "bg-blue-300",
+          leaf.highlight === "region" && "bg-blue-300",
           leaf.highlight === "location" && "bg-blue-100",
           leaf.highlight === "facility" && "bg-blue-100",
         )}

@@ -25,15 +25,19 @@ with open(csv_path, 'r') as csv_file:
 
 def parse_query(query, excluded=[]):
   results = []
+  parsed_entities = set()
+
   sentences = sent_tokenize(query)
   for sentence in sentences:
-    parsed_entities = set()
     doc = nlp(sentence)
 
     # get all named entities
     for entity in doc.ents:
+      # check if already parsed
+      if _search_set(parsed_entities, entity.text):
+        continue
+
       # if entity is a city
-      print(entity.text, entity.label_, file=sys.stderr)
       if entity.label_ == 'GPE':
         # check if is country
         country = _find_country(entity.text)
@@ -53,7 +57,6 @@ def parse_query(query, excluded=[]):
           results.append({
             "type": "city",
             "name": city["city_name"],
-            "country_code": city["country_iso_code"],
             "query": entity.text
           })
           continue
@@ -70,7 +73,8 @@ def parse_query(query, excluded=[]):
         parsed_entities.add(entity.text)
         results.append({
           "type": "location",
-          "name": entity.text
+          "name": entity.text,
+          "query": entity.text
         })
       # if entity is a facility or landmark
       elif entity.label_ == 'FAC':
@@ -93,7 +97,6 @@ def parse_query(query, excluded=[]):
           results.append({
             "type": "city",
             "name": city["city_name"],
-            "country_code": city["country_iso_code"],
             "query": token.text
           })
     
@@ -103,11 +106,14 @@ def parse_query(query, excluded=[]):
   # filter excluded entities
   filtered_results = filter(lambda entity: entity["name"] not in excluded, results)
 
-  geocoded_entities = list(map(_fetch_details, filtered_results))
+  geocoded_entities = []
+  for entity in filtered_results:
+    proximity = _get_center_point(geocoded_entities)
+    geocoded_entities.append(_fetch_details(entity, proximity))
 
   return geocoded_entities
 
-def _fetch_details(entity):
+def _fetch_details(entity, proximity=None):
   base_url = "https://api.mapbox.com/geocoding/v5/mapbox.places/"
   query = urllib.parse.quote(entity["name"])
 
@@ -116,7 +122,7 @@ def _fetch_details(entity):
     "city": "place,locality",
     "location": "place",
     "facility": "poi",
-    "unknown": "country,place,locality,region,district" 
+    "unknown": "country,place,locality,region,district,poi" 
   }
 
   options = {
@@ -126,8 +132,8 @@ def _fetch_details(entity):
     "limit": 1
   }
 
-  if entity["type"] == "city":
-    options["country"] = entity["country_code"]
+  if proximity:
+    options["proximity"] =  str(proximity["lng"]) + "," + str(proximity["lat"])
 
   res = requests.get(base_url + query + ".json", params=options)
   data = res.json()
@@ -168,3 +174,19 @@ def _search_set(set, query):
     if query.lower() in set_item.lower():
       return True
   return False
+
+def _get_center_point(entities):
+  if len(entities) == 0:
+    return None
+
+  lats = []
+  lngs = []
+
+  for entity in entities:
+    lats.append(entity['lat'])
+    lngs.append(entity['lng'])
+
+  return {
+    "lat": sum(lats) / len(lats),
+    "lng": sum(lngs) / len(lngs)
+  }
