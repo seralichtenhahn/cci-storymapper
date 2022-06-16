@@ -1,6 +1,6 @@
 import { Editable, Slate, withReact } from "slate-react"
 import { Node, Text, createEditor } from "slate"
-import React, { useCallback, useMemo, useState } from "react"
+import React, { useCallback, useMemo, useTransition } from "react"
 
 import IconDelete from "@/components/Icons/IconDelete"
 import Tippy from "@tippyjs/react"
@@ -12,6 +12,7 @@ const serialize = (nodes) => {
 }
 
 export default function Editor() {
+  const [, startTransition] = useTransition()
   const editor = useMemo(() => withReact(createEditor()), [])
   const initialValue = useMemo(
     () => [
@@ -58,12 +59,16 @@ export default function Editor() {
   )
 
   return (
-    <div className="flex flex-col h-full p-4 space-y-4 bg-white shadow-lg">
-      <h2 className="font-bold text-gray-900">Your Story:</h2>
+    <div className="flex flex-col h-full p-2 space-y-4 bg-white shadow-lg">
+      <h2 className="p-2 font-bold text-gray-900">Your Story:</h2>
       <Slate
         editor={editor}
         value={initialValue}
-        onChange={(v) => setQuery(serialize(v))}
+        onChange={(v) => {
+          startTransition(() => {
+            setQuery(serialize(v))
+          })
+        }}
       >
         <Editable
           decorate={decorate}
@@ -71,7 +76,7 @@ export default function Editor() {
           spellCheck
           autoFocus
           placeholder="Once upon a time in Hollywood..."
-          className="flex-1"
+          className="flex-1 p-2 overflow-auto leading-relaxed"
         />
       </Slate>
       <div className="flex justify-between px-4 py-1 text-sm font-bold tracking-wider text-blue-500 uppercase bg-blue-100 rounded-full justify-self-end">
