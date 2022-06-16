@@ -4,9 +4,8 @@ import ReactMapGL, { Marker, NavigationControl } from "react-map-gl"
 import IconExternal from "@/components/Icons/IconExternal"
 import IconMarker from "@/components/Icons/IconMarker"
 import Tippy from "@tippyjs/react"
-import WebMercatorViewport from "@math.gl/web-mercator"
-import mapboxgl from "mapbox-gl"
 import useAppState from "@/hooks/useAppState"
+import MapCamera from "@/components/Map/MapCamera"
 
 export default function Map() {
   const container = useRef()
@@ -15,33 +14,6 @@ export default function Map() {
   const [viewport, setViewport] = useState({
     position: [0, 0, 0],
   })
-
-  useEffect(() => {
-    if (data.length === 0) {
-      return
-    }
-
-    const bounds = new mapboxgl.LngLatBounds()
-    data
-      .filter((marker) => marker.lat && marker.lng)
-      .forEach((marker) => bounds.extend([marker.lng, marker.lat]))
-
-    const { latitude, longitude, zoom } = new WebMercatorViewport({
-      width: container.current.clientWidth,
-      height: container.current.clientHeight,
-      ...viewport,
-    }).fitBounds(bounds.toArray(), {
-      padding: 100,
-      maxZoom: 10,
-    })
-
-    setViewport({
-      ...viewport,
-      latitude,
-      longitude,
-      zoom,
-    })
-  }, [data])
 
   return (
     <div ref={container} className="w-full h-full overflow-hidden">
@@ -54,6 +26,11 @@ export default function Map() {
         attributionControl={false}
         mapStyle="mapbox://styles/seralichtenhahn/cl2n8c5lx005714l40jxdibql"
       >
+        <MapCamera
+          width={container.current?.clientWidth}
+          height={container.current?.clientHeight}
+          viewport={viewport}
+        />
         {data
           .filter((marker) => marker.lat && marker.lng)
           .map((marker, i) => {
@@ -80,7 +57,7 @@ export default function Map() {
                   placement="right"
                   interactive={true}
                   visible={true}
-                  moveTransition="transform 100ms ease-out"
+                  // moveTransition="transform 100ms ease-out"
                   maxWidth="none"
                   popperOptions={{
                     strategy: "fixed",
