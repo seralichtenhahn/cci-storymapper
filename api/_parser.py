@@ -158,6 +158,7 @@ def _fetch_details(entity, proximity=None):
     "access_token": current_app.config["MAPBOX_ACCESS_TOKEN"],
     "types": types_map[entity["type"]],
     "language": "en",
+    "autocomplete": "false",
     "limit": 1
   }
 
