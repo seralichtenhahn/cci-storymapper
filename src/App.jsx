@@ -9,11 +9,11 @@ function App() {
     <AppContext>
       <div className="flex flex-col h-screen">
         <AppNavigation />
-        <div className="flex flex-none flex-col-reverse w-full h-[calc(100vh-5rem)] lg:flex-row">
-          <div className="flex-grow h-full shadow-lg">
+        <div className="flex flex-none overflow-hidden flex-col-reverse w-full h-[calc(100vh-5rem)] lg:flex-row">
+          <div className="h-[calc(100vh-5rem-100vw)] lg:h-full flex-1 lg:shadow-lg lg:flex-grow">
             <Editor />
           </div>
-          <div className="flex-none w-full h-2/3 lg:h-full lg:w-2/3">
+          <div className="flex-none w-full aspect-square lg:aspect-auto lg:h-full lg:w-2/3">
             <Map />
           </div>
         </div>

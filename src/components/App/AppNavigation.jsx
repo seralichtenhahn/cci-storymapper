@@ -3,7 +3,7 @@ import React from "react"
 
 export default function AppNavigation() {
   return (
-    <nav className="flex items-center justify-between w-full p-4 mx-auto text-white bg-blue-700">
+    <nav className="flex items-center justify-between flex-1 w-full px-4 mx-auto text-white bg-blue-700">
       <a
         className="inline-flex items-center justify-center py-2 font-bold rounded-lg"
         href="/"
