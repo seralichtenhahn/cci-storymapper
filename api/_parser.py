@@ -6,6 +6,7 @@ import requests
 import urllib
 from flask import current_app
 import sys
+from ._utils import kebab, search_set, get_center_point
 
 nlp = en_core_web_md.load()
 
@@ -34,10 +35,10 @@ def parse_query(query, excluded=[]):
     # get all named entities
     for entity in doc.ents:
       # check if already parsed
-      if _search_set(parsed_entities, entity.text):
+      if search_set(parsed_entities, entity.text):
         continue
 
-      # if entity is a city
+      # if entity is a geographical entity
       if entity.label_ == 'GPE':
         # check if is country
         country = _find_country(entity.text)
@@ -76,6 +77,7 @@ def parse_query(query, excluded=[]):
           "name": entity.text,
           "query": entity.text
         })
+
       # if entity is a facility or landmark
       elif entity.label_ == 'FAC':
         parsed_entities.add(entity.text)
@@ -88,27 +90,54 @@ def parse_query(query, excluded=[]):
     # get all nouns
     for token in doc:
       if token.tag_ == "NNP":
+
         # check if already parsed
-        if _search_set(parsed_entities, token.text):
+        if search_set(parsed_entities, token.text):
           continue
 
-        city = _find_city(token.text)
+        # handle prefixes:
+        # 1. St -> Saint-
+        # 2. San -> San 
+        prefixes = {
+          "St": "Saint-",
+          "San": "San ",
+        }
+
+        search_query = token.text
+        original_query = token.text
+
+        lefts = [t.text for t in token.lefts]
+
+        if len(lefts) > 0:
+          prefix = lefts[0]
+          # check if token has prefix
+          if prefix in prefixes:
+            search_query = prefixes[prefix] + token.text
+            original_query = f"{prefix} {token.text}"
+        
+        city = _find_city(search_query)
         if city is not None:
           results.append({
             "type": "city",
             "name": city["city_name"],
-            "query": token.text
+            "query": original_query
           })
-    
+
   if len(results) == 0:
     return []
 
   # filter excluded entities
-  filtered_results = filter(lambda entity: entity["name"] not in excluded, results)
+  filtered_results = filter(lambda entity: entity["query"] not in excluded, results)
+
+  # sort results by appearance in query
+  def sort_by_index(entity):
+    return query.find(entity["query"])
+
+  filtered_results = sorted(filtered_results, key=sort_by_index)
 
   geocoded_entities = []
   for entity in filtered_results:
-    proximity = _get_center_point(geocoded_entities)
+    proximity = get_center_point(geocoded_entities)
     geocoded_entities.append(_fetch_details(entity, proximity))
 
   return geocoded_entities
@@ -143,6 +172,10 @@ def _fetch_details(entity, proximity=None):
   
   feature = data['features'][0]
 
+  # filter out not relevant entries
+  if feature["relevance"] < 0.8:
+    return entity
+
   if entity["type"] == "unknown":
     entity["type"] = feature["place_type"][0]
     entity["name"] = feature["text"]
@@ -159,7 +192,10 @@ def _fetch_details(entity, proximity=None):
 
 def _find_city(query):
   for city in cities:
-    if city["city_name"].lower() == query.lower():
+    cityname_lower = city["city_name"].lower()
+    if cityname_lower == kebab(query):
+      return city
+    if cityname_lower == query.lower():
       return city
   return None
 
@@ -168,25 +204,3 @@ def _find_country(query):
     if country.lower() == query.lower():
       return country
   return None
-
-def _search_set(set, query):
-  for set_item in set:
-    if query.lower() in set_item.lower():
-      return True
-  return False
-
-def _get_center_point(entities):
-  if len(entities) == 0:
-    return None
-
-  lats = []
-  lngs = []
-
-  for entity in entities:
-    lats.append(entity['lat'])
-    lngs.append(entity['lng'])
-
-  return {
-    "lat": sum(lats) / len(lats),
-    "lng": sum(lngs) / len(lngs)
-  }

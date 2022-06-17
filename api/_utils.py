@@ -1,36 +1,33 @@
-import json
-from _parser import parse_query
+from re import sub
 
-test_results = []
+def kebab(s):
+  return '-'.join(
+    sub(r"(\s|_|-)+"," ",
+    sub(r"[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+",
+    lambda mo: ' ' + mo.group(0).lower(), s)).split())
 
-def test(query, print_output = False, expected=None):
-  value = parse_query(query)
-  if print_output:
-    print(value)
+def search_set(set, query):
+  for set_item in set:
+    if query.lower() in set_item.lower():
+      return True
+  return False
 
-  if expected is not None:
-    if json.dumps(value) == json.dumps(expected):
-      test_results.append({
-        "success": True,
-        "query": query,
-      })
-    else:
-      print(f"FAILED TEST: {query}")
-      print(f"Expected: {expected}")
-      print(f"Got: {value}")
-      print("\n")
-      test_results.append({
-        "success": False,
-        "query": query,
-        "expected": expected,
-      })
-  return value
+def get_center_point(entities):
+  if len(entities) == 0:
+    return None
 
-def print_output():
-  passed_tests = list(filter(lambda x: x["success"], test_results))
-  failed_tests = list(filter(lambda x: not x["success"], test_results))
+  lats = []
+  lngs = []
 
-  print("\n")
-  print(f"{len(passed_tests)} Passed test(s)")
-  print(f"{len(failed_tests)} Failed test(s)")
-  print(f"{len(test_results)} Total test(s)")
+  for entity in entities:
+    if "lat" in entity and "lng" in entity:
+      lats.append(entity["lat"])
+      lngs.append(entity["lng"])
+
+  if len(lats) == 0 or len(lngs) == 0:
+    return None
+
+  return {
+    "lat": sum(lats) / len(lats),
+    "lng": sum(lngs) / len(lngs)
+  }
