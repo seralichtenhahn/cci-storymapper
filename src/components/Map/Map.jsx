@@ -6,6 +6,7 @@ import IconMarker from "@/components/Icons/IconMarker"
 import Tippy from "@tippyjs/react"
 import useAppState from "@/hooks/useAppState"
 import MapCamera from "@/components/Map/MapCamera"
+import MapRoutes from "@/components/Map/MapRoutes"
 
 export default function Map() {
   const container = useRef()
@@ -31,6 +32,7 @@ export default function Map() {
           height={container.current?.clientHeight}
           viewport={viewport}
         />
+        <MapRoutes />
         {data
           .filter((marker) => marker.lat && marker.lng)
           .map((marker, i) => {
