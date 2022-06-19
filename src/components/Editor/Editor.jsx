@@ -59,8 +59,8 @@ export default function Editor() {
   )
 
   return (
-    <div className="flex flex-col h-full p-2 space-y-4 bg-white shadow-lg">
-      <h2 className="p-2 font-bold text-gray-900">Your Story:</h2>
+    <div className="flex flex-col h-full p-2 space-y-2 bg-white shadow-lg">
+      <h2 className="px-2 font-bold text-gray-900 lg:mt-4">Your Story:</h2>
       <Slate
         editor={editor}
         value={initialValue}
