@@ -4,6 +4,12 @@
 
 > A tool for visualizing places and routes on a map.
 
+## Important links
+
+- [Repository](https://git.arts.ac.uk/serafin/storymapper)
+- [Documentation](/Documentation.pdf)
+- [Demo](https://storymapper.netlify.app/)
+
 ## Installation
 
 ### Dependencies
