@@ -40,7 +40,7 @@ def parse_query(query, excluded=[]):
 
       # if entity is a geographical entity
       if entity.label_ == 'GPE':
-        # check if is country
+        # check if is a country
         country = _find_country(entity.text)
         if country:
           parsed_entities.add(country)
@@ -51,7 +51,7 @@ def parse_query(query, excluded=[]):
           })
           continue
 
-        # check if is city
+        # check if is a city
         city = _find_city(entity.text)
         if city:
           parsed_entities.add(city["city_name"])
@@ -137,6 +137,7 @@ def parse_query(query, excluded=[]):
 
   geocoded_entities = []
   for entity in filtered_results:
+    # get center point of all parsed entities
     proximity = get_center_point(geocoded_entities)
     geocoded_entities.append(_fetch_details(entity, proximity))
 
@@ -168,7 +169,7 @@ def _fetch_details(entity, proximity=None):
   res = requests.get(base_url + query + ".json", params=options)
   data = res.json()
   if res.status_code != 200 or len(data['features']) == 0:
-    print("Error: " + str(data))
+    print("Error: " + str(data), file=sys.stderr)
     return entity
   
   feature = data['features'][0]
