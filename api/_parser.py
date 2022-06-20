@@ -14,6 +14,15 @@ csv_path = os.getcwd() + "/api/data/cities.csv"
 cities = []
 coutries = []
 
+# handle prefixes:
+# 1. St -> Saint-
+# 2. San -> San 
+prefixes = {
+  "St": "Saint-",
+  "St-": "Saint-",
+  "San": "San ",
+}
+
 with open(csv_path, 'r') as csv_file:
   csv_reader = csv.DictReader(csv_file)
 
@@ -87,6 +96,18 @@ def parse_query(query, excluded=[]):
           "query": entity.text
         })
 
+      # if entity is a person or organisation
+      # (sometimes spacy returns a person as a location or organisation)
+      elif entity.label_ == 'PERSON' or entity.label_ == 'ORG':
+        city = _find_city(entity.text)
+        if city:
+          parsed_entities.add(city["city_name"])
+          results.append({
+            "type": "city",
+            "name": city["city_name"],
+            "query": entity.text
+          })
+
     # get all nouns
     for token in doc:
       if token.tag_ == "NNP":
@@ -94,14 +115,6 @@ def parse_query(query, excluded=[]):
         # check if already parsed
         if search_set(parsed_entities, token.text):
           continue
-
-        # handle prefixes:
-        # 1. St -> Saint-
-        # 2. San -> San 
-        prefixes = {
-          "St": "Saint-",
-          "San": "San ",
-        }
 
         search_query = token.text
         original_query = token.text
@@ -199,6 +212,13 @@ def _find_city(query):
       return city
     if cityname_lower == query.lower():
       return city
+    for prefix in prefixes:
+      if prefix in query:
+        query_with_prefix = query.replace(prefix, prefixes[prefix])
+        if cityname_lower == kebab(query_with_prefix):
+          return city
+        if cityname_lower == query_with_prefix.lower():
+          return city
   return None
 
 def _find_country(query):
