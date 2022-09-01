@@ -10,7 +10,7 @@ from ._utils import kebab, search_set, get_center_point
 
 nlp = en_core_web_md.load()
 
-csv_path = os.getcwd() + "/api/data/cities.csv"
+csv_path = os.getcwd() + "/src/data/cities.csv"
 cities = []
 coutries = []
 
