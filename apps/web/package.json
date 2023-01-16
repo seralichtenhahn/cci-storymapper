@@ -8,7 +8,8 @@
     "build": "yarn run build:css && vite build",
     "build:css": "NODE_ENV=production tailwindcss -i ./src/assets/tailwind.css -o ./src/assets/main.css -m",
     "preview": "vite preview",
-    "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx}'"
+    "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx}'",
+    "start": "npx http-server -P http://127.0.0.1:${PORT} ./dist"
   },
   "dependencies": {
     "@headlessui/react": "^1.6.4",
